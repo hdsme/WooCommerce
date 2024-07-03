@@ -1,18 +1,32 @@
 <?php
 /**
+ * Tests for the coupons REST API.
+ *
+ * @package WooCommerce\Tests\API
+ * @since 3.0.0
+ */
+
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
+
+/**
  * Coupon API Tests
  * @package WooCommerce\Tests\API
  * @since 3.0.0
  */
 class WC_Tests_API_Coupons_V2 extends WC_REST_Unit_Test_Case {
+	use ArraySubsetAsserts;
 
+	/**
+	 * Endpoint to use for the tests.
+	 * @var WC_REST_Coupons_Controller
+	 */
 	protected $endpoint;
 
 	/**
 	 * Setup test coupon data.
 	 * @since 3.0.0
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->endpoint = new WC_REST_Coupons_Controller();
 		$this->user     = $this->factory->user->create(
@@ -49,10 +63,22 @@ class WC_Tests_API_Coupons_V2 extends WC_REST_Unit_Test_Case {
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( 2, count( $coupons ) );
-		$this->assertContains(
+
+		$matching_coupon_data = current(
+			array_filter(
+				$coupons,
+				function( $coupon ) use ( $coupon_1 ) {
+					return $coupon['id'] === $coupon_1->get_id();
+				}
+			)
+		);
+		$this->assertIsArray( $matching_coupon_data );
+
+		$this->assertArraySubset(
 			array(
 				'id'                          => $coupon_1->get_id(),
 				'code'                        => 'dummycoupon-1',
+				'status'                      => $coupon_1->get_status(),
 				'amount'                      => '1.00',
 				'date_created'                => wc_rest_prepare_date_response( $post_1->post_date_gmt, false ),
 				'date_created_gmt'            => wc_rest_prepare_date_response( $post_1->post_date_gmt ),
@@ -91,7 +117,7 @@ class WC_Tests_API_Coupons_V2 extends WC_REST_Unit_Test_Case {
 					),
 				),
 			),
-			$coupons
+			$matching_coupon_data
 		);
 	}
 
@@ -121,6 +147,7 @@ class WC_Tests_API_Coupons_V2 extends WC_REST_Unit_Test_Case {
 			array(
 				'id'                          => $coupon->get_id(),
 				'code'                        => 'dummycoupon-1',
+				'status'                      => $coupon->get_status(),
 				'amount'                      => '1.00',
 				'date_created'                => wc_rest_prepare_date_response( $post->post_date_gmt, false ),
 				'date_created_gmt'            => wc_rest_prepare_date_response( $post->post_date_gmt ),
@@ -196,6 +223,7 @@ class WC_Tests_API_Coupons_V2 extends WC_REST_Unit_Test_Case {
 			array(
 				'id'                          => $data['id'],
 				'code'                        => 'test',
+				'status'                      => 'publish',
 				'amount'                      => '5.00',
 				'date_created'                => $data['date_created'],
 				'date_created_gmt'            => $data['date_created_gmt'],
@@ -440,9 +468,10 @@ class WC_Tests_API_Coupons_V2 extends WC_REST_Unit_Test_Case {
 		$data       = $response->get_data();
 		$properties = $data['schema']['properties'];
 
-		$this->assertEquals( 27, count( $properties ) );
+		$this->assertEquals( 28, count( $properties ) );
 		$this->assertArrayHasKey( 'id', $properties );
 		$this->assertArrayHasKey( 'code', $properties );
+		$this->assertArrayHasKey( 'status', $properties );
 		$this->assertArrayHasKey( 'date_created', $properties );
 		$this->assertArrayHasKey( 'date_created_gmt', $properties );
 		$this->assertArrayHasKey( 'date_modified', $properties );

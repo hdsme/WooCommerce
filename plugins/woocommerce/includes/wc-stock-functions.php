@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @param  int|WC_Product $product        Product ID or product instance.
  * @param  int|null       $stock_quantity Stock quantity.
- * @param  string         $operation      Type of opertion, allows 'set', 'increase' and 'decrease'.
+ * @param  string         $operation      Type of operation, allows 'set', 'increase' and 'decrease'.
  * @param  bool           $updating       If true, the product object won't be saved here as it will be updated later.
  * @return bool|int|null
  */
@@ -197,11 +197,22 @@ function wc_reduce_stock_levels( $order_id ) {
 		$item->add_meta_data( '_reduced_stock', $qty, true );
 		$item->save();
 
-		$changes[] = array(
+		$change    = array(
 			'product' => $product,
 			'from'    => $new_stock + $qty,
 			'to'      => $new_stock,
 		);
+		$changes[] = $change;
+
+		/**
+		 * Fires when stock reduced to a specific line item
+		 *
+		 * @param WC_Order_Item_Product $item Order item data.
+		 * @param array $change  Change Details.
+		 * @param WC_Order $order  Order data.
+		 * @since 7.6.0
+		 */
+		do_action( 'woocommerce_reduce_order_item_stock', $item, $change, $order );
 	}
 
 	wc_trigger_stock_change_notifications( $order, $changes );
@@ -285,6 +296,7 @@ function wc_increase_stock_levels( $order_id ) {
 
 		$item_name = $product->get_formatted_name();
 		$new_stock = wc_update_product_stock( $product, $item_stock_reduced, 'increase' );
+		$old_stock = $new_stock - $item_stock_reduced;
 
 		if ( is_wp_error( $new_stock ) ) {
 			/* translators: %s item name. */
@@ -295,7 +307,18 @@ function wc_increase_stock_levels( $order_id ) {
 		$item->delete_meta_data( '_reduced_stock' );
 		$item->save();
 
-		$changes[] = $item_name . ' ' . ( $new_stock - $item_stock_reduced ) . '&rarr;' . $new_stock;
+		$changes[] = $item_name . ' ' . $old_stock . '&rarr;' . $new_stock;
+
+		/**
+		 * Fires when stock restored to a specific line item
+		 *
+		 * @since 9.1.0
+		 * @param WC_Order_Item_Product $item Order item data.
+		 * @param int $new_stock  New stock.
+		 * @param int $old_stock Old stock.
+		 * @param WC_Order $order  Order data.
+		 */
+		do_action( 'woocommerce_restore_order_item_stock', $item, $new_stock, $old_stock, $order );
 	}
 
 	if ( $changes ) {

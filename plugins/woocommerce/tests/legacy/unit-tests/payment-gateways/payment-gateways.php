@@ -11,8 +11,10 @@ class WC_Tests_Payment_Gateway extends WC_Unit_Test_Case {
 	/**
 	 * Setup, enable payment gateways Cash on delivery and direct bank deposit.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
+		$this->reset_legacy_proxy_mocks();
+
 		WC()->session = null;
 		$wc_payment_gateways = WC_Payment_Gateways::instance();
 		$wc_payment_gateways->init();
@@ -26,7 +28,7 @@ class WC_Tests_Payment_Gateway extends WC_Unit_Test_Case {
 	/**
 	 * Initialize session that some tests might have removed.
 	 */
-	public function tearDown() {
+	public function tearDown(): void {
 		parent::tearDown();
 		WC()->initialize_session();
 	}
@@ -55,5 +57,4 @@ class WC_Tests_Payment_Gateway extends WC_Unit_Test_Case {
 		WC()->payment_gateways()->set_current_gateway( $gateways );
 		$this->assertTrue( $current_gateway->chosen );
 	}
-
 }

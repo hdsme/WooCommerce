@@ -1,6 +1,7 @@
 {
-  "references": [
-    { "path": "tests/e2e/api" }
-  ],
-  "files": []
+	"extends": "../../tsconfig.base.json",
+	"references": [
+		{ "path": "../../packages/js/api" }
+	],
+	"files": []
 }

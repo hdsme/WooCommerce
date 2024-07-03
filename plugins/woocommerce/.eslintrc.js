@@ -1,7 +1,4 @@
-/** @format */
-
 module.exports = {
-	root: true,
 	env: {
 		browser: true,
 		es6: true,
@@ -16,10 +13,9 @@ module.exports = {
 	rules: {
 		camelcase: 0,
 		indent: 0,
-		'max-len': [ 2, { code: 140 } ],
 		'no-console': 1,
 	},
-	parser: 'babel-eslint',
+	parser: '@babel/eslint-parser',
 	parserOptions: {
 		ecmaVersion: 8,
 		ecmaFeatures: {
@@ -28,4 +24,15 @@ module.exports = {
 			jsx: true,
 		},
 	},
+	overrides: [
+		{
+			files: [ 'tests/e2e/**/*.spec.js' ],
+			rules: {
+				'jest/no-test-callback': 'off',
+				'@wordpress/no-unsafe-wp-apis': 'off',
+				'import/no-extraneous-dependencies': 'off',
+				'import/no-unresolved': 'off',
+			},
+		},
+	],
 };

@@ -15,7 +15,7 @@ class WC_Tests_Formatting_Functions extends WC_Unit_Test_Case {
 	/**
 	 * Set up.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		// Callback used by WP_HTTP_TestCase to decide whether to perform HTTP requests or to provide a mocked response.
@@ -219,13 +219,13 @@ class WC_Tests_Formatting_Functions extends WC_Unit_Test_Case {
 		$this->assertEquals( 4.53592, wc_get_weight( 10, 'kg' ) );
 		$this->assertEquals( 4535.92, wc_get_weight( 10, 'g' ) );
 		$this->assertEquals( 10, wc_get_weight( 10, 'lbs' ) );
-		$this->assertEquals( 160.00004208, wc_get_weight( 10, 'oz' ) );
+		$this->assertFloatEquals( 160.00004208, wc_get_weight( 10, 'oz' ) );
 
 		// oz.
 		update_option( 'woocommerce_weight_unit', 'oz' );
 		$this->assertEquals( 0.283495, wc_get_weight( 10, 'kg' ) );
 		$this->assertEquals( 283.495, wc_get_weight( 10, 'g' ) );
-		$this->assertEquals( 0.6249987469, wc_get_weight( 10, 'lbs' ) );
+		$this->assertFloatEquals( 0.6249987469, wc_get_weight( 10, 'lbs' ) );
 		$this->assertEquals( 10, wc_get_weight( 10, 'oz' ) );
 
 		// Custom from unit.
@@ -803,6 +803,12 @@ class WC_Tests_Formatting_Functions extends WC_Unit_Test_Case {
 
 		// Test empty NL postcode.
 		$this->assertEquals( '', wc_format_postcode( '', 'NL' ) );
+
+		// Test LV postcode without mandatory country code.
+		$this->assertEquals( 'LV-1337', wc_format_postcode( '1337', 'LV' ) );
+
+		// Test LV postcode with incorrect format (no dash).
+		$this->assertEquals( 'LV-1337', wc_format_postcode( 'lv1337', 'LV' ) );
 	}
 
 	/**
@@ -926,7 +932,7 @@ class WC_Tests_Formatting_Functions extends WC_Unit_Test_Case {
 	 * @since 3.3.0
 	 */
 	public function test_wc_format_sale_price() {
-		$this->assertEquals( '<del aria-hidden="true"><span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>10.00</bdi></span></del> <ins><span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span></ins>', wc_format_sale_price( '10', '5' ) );
+		$this->assertEquals( '<del aria-hidden="true"><span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>10.00</bdi></span></del> <span class="screen-reader-text">Original price was: &#036;10.00.</span><ins aria-hidden="true"><span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span></ins><span class="screen-reader-text">Current price is: &#036;5.00.</span>', wc_format_sale_price( '10', '5' ) );
 	}
 
 	/**

@@ -134,8 +134,10 @@ class WC_Shortcode_My_Account {
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || ! current_user_can( 'view_order', $order_id ) ) {
-			echo '<div class="woocommerce-error">' . esc_html__( 'Invalid order.', 'woocommerce' ) . ' <a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '" class="wc-forward">' . esc_html__( 'My account', 'woocommerce' ) . '</a></div>';
-
+			wc_print_notice(
+				esc_html__( 'Invalid order.', 'woocommerce' ) . ' <a href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '" class="wc-forward">' . esc_html__( 'My account', 'woocommerce' ) . '</a>',
+				'error'
+			);
 			return;
 		}
 
@@ -163,7 +165,7 @@ class WC_Shortcode_My_Account {
 	/**
 	 * Edit address page.
 	 *
-	 * @param string $load_address Type of address to load.
+	 * @param string $load_address Type of address; 'billing' or 'shipping'.
 	 */
 	public static function edit_address( $load_address = 'billing' ) {
 		$current_user = wp_get_current_user();
@@ -374,6 +376,7 @@ class WC_Shortcode_My_Account {
 		do_action( 'password_reset', $user, $new_pass );
 
 		wp_set_password( $new_pass, $user->ID );
+		update_user_meta( $user->ID, 'default_password_nag', false );
 		self::set_reset_password_cookie();
 
 		if ( ! apply_filters( 'woocommerce_disable_password_change_notification', false ) ) {

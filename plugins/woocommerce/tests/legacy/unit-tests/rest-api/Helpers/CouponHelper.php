@@ -9,7 +9,7 @@ namespace Automattic\WooCommerce\RestApi\UnitTests\Helpers;
 
 defined( 'ABSPATH' ) || exit;
 
-use \WC_Coupon;
+use WC_Coupon;
 
 /**
  * Class CouponHelper.
@@ -26,13 +26,13 @@ class CouponHelper {
 	 *
 	 * @return WC_Coupon
 	 */
-	public static function create_coupon( $coupon_code = 'dummycoupon', $meta = array() ) {
+	public static function create_coupon( $coupon_code = 'dummycoupon', $status = 'publish', $meta = array() ) {
 		// Insert post
 		$coupon_id = wp_insert_post(
 			array(
 				'post_title'   => $coupon_code,
 				'post_type'    => 'shop_coupon',
-				'post_status'  => 'publish',
+				'post_status'  => $status,
 				'post_excerpt' => 'This is a dummy coupon',
 			)
 		);

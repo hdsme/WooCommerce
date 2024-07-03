@@ -2,7 +2,11 @@
 
 echo "Initializing WooCommerce E2E"
 
-wp plugin activate woocommerce
+# This is a workaround to accommodate different directory names.
+wp plugin activate --all
+wp plugin deactivate akismet
+wp plugin deactivate hello
+
 wp theme install twentynineteen --activate
 wp user create customer customer@woocommercecoree2etestsuite.com \
 	--user_pass=password \
@@ -14,8 +18,18 @@ wp user create customer customer@woocommercecoree2etestsuite.com \
 # we cannot create API keys for the API, so we using basic auth, this plugin allows that.
 wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate
 
+# Reset plugin that allows us to reset WooCommerce state between tests.
+wp plugin install https://github.com/woocommerce/woocommerce-reset/zipball/trunk/ --activate
+
 # install the WP Mail Logging plugin to test emails
 wp plugin install wp-mail-logging --activate
 
+# Activate our E2E helper plugins to facilitate server-side interaction.
+wp plugin activate filter-setter
+wp plugin activate process-waiting-actions
+
 # initialize pretty permalinks
 wp rewrite structure /%postname%/
+
+# Activate our helper APIs plugin.
+wp plugin activate test-helper-apis

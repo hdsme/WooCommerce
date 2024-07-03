@@ -12,7 +12,7 @@ class WC_Tests_Product_Simple extends WC_Unit_Test_Case {
 	 */
 	protected $product;
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->product = WC_Helper_Product::create_simple_product();
@@ -65,7 +65,7 @@ class WC_Tests_Product_Simple extends WC_Unit_Test_Case {
 	 * @since 2.3
 	 */
 	public function test_get_sku() {
-		$this->assertEquals( 'DUMMY SKU', $this->product->get_sku() );
+		$this->assertMatchesRegularExpression( '/^DUMMY SKU\d+$/', $this->product->get_sku() );
 	}
 
 	/**

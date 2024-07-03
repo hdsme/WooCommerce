@@ -16,7 +16,7 @@ class WC_Tests_Account_Functions extends WC_Unit_Test_Case {
 	 * @since 3.3.0
 	 */
 	public function test_wc_lostpassword_url() {
-		$this->assertEquals( 'http://example.org?lost-password', wc_lostpassword_url() );
+		$this->assertEquals( 'http://' . WP_TESTS_DOMAIN . '?lost-password', wc_lostpassword_url() );
 	}
 
 	/**
@@ -25,7 +25,7 @@ class WC_Tests_Account_Functions extends WC_Unit_Test_Case {
 	 * @since 3.3.0
 	 */
 	public function test_wc_customer_edit_account_url() {
-		$this->assertEquals( 'http://example.org?edit-account', wc_customer_edit_account_url() );
+		$this->assertEquals( 'http://' . WP_TESTS_DOMAIN . '?edit-account', wc_customer_edit_account_url() );
 	}
 
 	/**
@@ -52,7 +52,7 @@ class WC_Tests_Account_Functions extends WC_Unit_Test_Case {
 				'downloads'       => 'Downloads',
 				'edit-address'    => 'Addresses',
 				'edit-account'    => 'Account details',
-				'customer-logout' => 'Logout',
+				'customer-logout' => 'Log out',
 			),
 			wc_get_account_menu_items()
 		);
@@ -73,7 +73,7 @@ class WC_Tests_Account_Functions extends WC_Unit_Test_Case {
 	 * @since 3.3.0
 	 */
 	public function test_wc_get_account_endpoint_url() {
-		$this->assertEquals( 'http://example.org?test', wc_get_account_endpoint_url( 'test' ) );
+		$this->assertEquals( 'http://' . WP_TESTS_DOMAIN . '?test', wc_get_account_endpoint_url( 'test' ) );
 	}
 
 	/**
@@ -252,6 +252,29 @@ class WC_Tests_Account_Functions extends WC_Unit_Test_Case {
 				'method'  => array(
 					'last4' => '1234',
 					'brand' => 'Mastercard',
+				),
+				'expires' => '12/20',
+			),
+			wc_get_account_saved_payment_methods_list_item_cc( array(), $token )
+		);
+
+		$token->delete( true );
+
+		// Co-branded credit card.
+		$token = new WC_Payment_Token_CC();
+		$token->set_token( '1001' );
+		$token->set_gateway_id( 'bacs' );
+		$token->set_card_type( 'cartes_bancaires' );
+		$token->set_last4( '1001' );
+		$token->set_expiry_month( '12' );
+		$token->set_expiry_year( '2020' );
+		$token->save();
+
+		$this->assertEquals(
+			array(
+				'method'  => array(
+					'last4' => '1001',
+					'brand' => 'Cartes Bancaires',
 				),
 				'expires' => '12/20',
 			),

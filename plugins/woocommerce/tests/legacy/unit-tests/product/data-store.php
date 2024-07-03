@@ -24,7 +24,7 @@ class WC_Tests_Product_Data_Store extends WC_Unit_Test_Case {
 	}
 
 	/**
-	 * Test creating a new product.
+	 * Test creating a new product (published by default).
 	 *
 	 * @since 3.0.0
 	 */
@@ -34,10 +34,60 @@ class WC_Tests_Product_Data_Store extends WC_Unit_Test_Case {
 		$product->set_name( 'My Product' );
 		$product->save();
 
+		$this->assertEquals( 'publish', $product->get_status() );
+
 		$read_product = new WC_Product( $product->get_id() );
 
 		$this->assertEquals( '42', $read_product->get_regular_price() );
 		$this->assertEquals( 'My Product', $read_product->get_name() );
+	}
+
+	/**
+	 * Test creating a new product (explicitly set to published).
+	 */
+	public function test_product_create_published() {
+		$product = new WC_Product();
+		$product->set_status( 'publish' );
+		$product->save();
+
+		$this->assertEquals( 'publish', $product->get_status() );
+	}
+
+	/**
+	 * Test creating a new draft product.
+	 */
+	public function test_product_create_draft() {
+		$product = new WC_Product();
+		$product->set_status( 'draft' );
+		$product->save();
+
+		$this->assertEquals( 'draft', $product->get_status() );
+	}
+
+	/**
+	 * Test creating a new product with woocommerce_new_product_data filter.
+	 */
+	public function test_product_create_with_woocommerce_new_product_data_filter() {
+		$force_draft_status_fn = function ( $data ) {
+			$data['post_status'] = 'draft';
+			return $data;
+		};
+
+		add_filter(
+			'woocommerce_new_product_data',
+			$force_draft_status_fn
+		);
+
+		$product = new WC_Product();
+		$product->set_status( 'pending' );
+		$product->save();
+
+		$this->assertEquals( 'draft', $product->get_status() );
+
+		remove_filter(
+			'woocommerce_new_product_data',
+			$force_draft_status_fn
+		);
 	}
 
 	/**
@@ -545,6 +595,7 @@ class WC_Tests_Product_Data_Store extends WC_Unit_Test_Case {
 
 		$sale_products    = $product_store->get_on_sale_products();
 		$sale_product_ids = wp_list_pluck( $sale_products, 'id' );
+		$sale_product_ids = array_map( 'absint', $sale_product_ids );
 
 		$this->assertContains( $sale_product->get_id(), $sale_product_ids );
 		$this->assertNotContains( $not_sale_product->get_id(), $sale_product_ids );
@@ -680,7 +731,7 @@ class WC_Tests_Product_Data_Store extends WC_Unit_Test_Case {
 		// Check the variation with a multiword attribute name.
 		$this->assertEquals( 'color: Green, mounting-plate: galaxy-s6, support: one-year', $multiword_attribute_variation->get_attribute_summary() );
 
-		// Add atributes to parent so that they are loaded correctly for variation.
+		// Add attributes to parent so that they are loaded correctly for variation.
 		$attribute_1 = new WC_Product_Attribute();
 		$attribute_1->set_name( 'color' );
 		$attribute_1->set_options( array( 'Green', 'Blue' ) );
@@ -1081,5 +1132,15 @@ class WC_Tests_Product_Data_Store extends WC_Unit_Test_Case {
 		);
 
 		$this->assertEquals( $children[2], $match );
+
+		// Test trying to get a variation of a variation.
+		$variation = wc_get_product( $children[0] );
+		$match     = $data_store->find_matching_product_variation(
+			$variation,
+			array(
+				'attribute_pa_size' => 'small',
+			)
+		);
+		$this->assertEquals( 0, $match );
 	}
 }

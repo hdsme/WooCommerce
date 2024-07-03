@@ -30,7 +30,7 @@ class WC_Tests_Coupon_Data extends WC_Unit_Test_Case {
 	 * @since 3.0.0
 	 */
 	public function test_coupon_backwards_compat_props_use_correct_getters() {
-		// Accessing properties directly will throw some wanted deprected notices
+		// Accessing properties directly will throw some wanted deprecated notices
 		// So we need to let PHPUnit know we are expecting them and it's fine to continue
 		$legacy_keys                   = array(
 			'id',
@@ -174,6 +174,7 @@ class WC_Tests_Coupon_Data extends WC_Unit_Test_Case {
 			'description'                => 'hello world',
 			'discount_type'              => 'percent',
 			'amount'                     => 10.50,
+			'status'                     => 'publish',
 			'usage_count'                => 5,
 			'individual_use'             => true,
 			'product_ids'                => array( 5, 10 ),
